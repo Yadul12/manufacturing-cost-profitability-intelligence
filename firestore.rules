@@ -1,0 +1,201 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Hardened Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation Helper: ProductionRecord
+    function isValidProductionRecord(data) {
+      return data.keys().hasAll([
+        'ownerId', 'month', 'plantId', 'plantName', 'sector',
+        'productId', 'productName', 'productionLine', 'unitsProduced',
+        'sellingPricePerUnit', 'revenue', 'budgetedCost',
+        'rawMaterialCost', 'directLabourCost', 'energyCost',
+        'maintenanceCost', 'logisticsCost', 'inventoryHoldingCost',
+        'overheadCost', 'machineHoursAvailable', 'machineHoursUsed',
+        'rawMaterialInputTons', 'rawMaterialNetTons',
+        'energyKwhConsumed', 'benchmarkEnergyKwhPerUnit',
+        'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'ownerId', 'month', 'plantId', 'plantName', 'sector',
+        'productId', 'productName', 'productionLine', 'unitsProduced',
+        'sellingPricePerUnit', 'revenue', 'budgetedCost',
+        'rawMaterialCost', 'directLabourCost', 'energyCost',
+        'maintenanceCost', 'logisticsCost', 'inventoryHoldingCost',
+        'overheadCost', 'machineHoursAvailable', 'machineHoursUsed',
+        'rawMaterialInputTons', 'rawMaterialNetTons',
+        'energyKwhConsumed', 'benchmarkEnergyKwhPerUnit',
+        'createdAt', 'updatedAt'
+      ]) &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid &&
+      data.month is string && data.month.size() == 7 && data.month.matches('^202[0-9]-(0[1-9]|1[0-2])$') &&
+      data.plantId is string && data.plantId.size() >= 3 && data.plantId.size() <= 32 && data.plantId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.plantName is string && data.plantName.size() >= 2 && data.plantName.size() <= 120 &&
+      data.sector is string && data.sector.size() >= 2 && data.sector.size() <= 40 &&
+      data.sector in ['Cement Systems', 'Sugar Processing', 'Mining & Material Handling', 'Thermal Energy'] &&
+      data.productId is string && data.productId.size() >= 3 && data.productId.size() <= 32 && data.productId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.productName is string && data.productName.size() >= 2 && data.productName.size() <= 120 &&
+      data.productionLine is string && data.productionLine.size() >= 2 && data.productionLine.size() <= 64 &&
+      data.unitsProduced is number && data.unitsProduced > 0 && data.unitsProduced <= 1000000 &&
+      data.sellingPricePerUnit is number && data.sellingPricePerUnit > 0 && data.sellingPricePerUnit <= 100000000 &&
+      data.revenue is number && data.revenue >= 0 && data.revenue <= 10000000000 &&
+      data.budgetedCost is number && data.budgetedCost >= 0 && data.budgetedCost <= 10000000000 &&
+      data.rawMaterialCost is number && data.rawMaterialCost >= 0 && data.rawMaterialCost <= 1000000000 &&
+      data.directLabourCost is number && data.directLabourCost >= 0 && data.directLabourCost <= 1000000000 &&
+      data.energyCost is number && data.energyCost >= 0 && data.energyCost <= 1000000000 &&
+      data.maintenanceCost is number && data.maintenanceCost >= 0 && data.maintenanceCost <= 1000000000 &&
+      data.logisticsCost is number && data.logisticsCost >= 0 && data.logisticsCost <= 1000000000 &&
+      data.inventoryHoldingCost is number && data.inventoryHoldingCost >= 0 && data.inventoryHoldingCost <= 1000000000 &&
+      data.overheadCost is number && data.overheadCost >= 0 && data.overheadCost <= 1000000000 &&
+      data.machineHoursAvailable is number && data.machineHoursAvailable > 0 && data.machineHoursAvailable <= 100000 &&
+      data.machineHoursUsed is number && data.machineHoursUsed >= 0 && data.machineHoursUsed <= data.machineHoursAvailable &&
+      data.rawMaterialInputTons is number && data.rawMaterialInputTons > 0 && data.rawMaterialInputTons <= 1000000 &&
+      data.rawMaterialNetTons is number && data.rawMaterialNetTons > 0 && data.rawMaterialNetTons <= data.rawMaterialInputTons &&
+      data.energyKwhConsumed is number && data.energyKwhConsumed >= 0 && data.energyKwhConsumed <= 1000000000 &&
+      data.benchmarkEnergyKwhPerUnit is number && data.benchmarkEnergyKwhPerUnit > 0 && data.benchmarkEnergyKwhPerUnit <= 100000000 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // Validation Helper: SavedScenario
+    function isValidSavedScenario(data) {
+      return data.keys().hasAll([
+        'ownerId', 'name', 'description', 'targetSector',
+        'rawMaterialDeltaPct', 'energyDeltaPct', 'volumeDeltaPct',
+        'labourDeltaPct', 'utilisationTargetPct', 'sellingPriceDeltaPct',
+        'projectedGrossMarginPct', 'projectedAnnualSavingsUsd',
+        'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'ownerId', 'name', 'description', 'targetSector',
+        'rawMaterialDeltaPct', 'energyDeltaPct', 'volumeDeltaPct',
+        'labourDeltaPct', 'utilisationTargetPct', 'sellingPriceDeltaPct',
+        'projectedGrossMarginPct', 'projectedAnnualSavingsUsd',
+        'createdAt', 'updatedAt'
+      ]) &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid &&
+      data.name is string && data.name.size() >= 2 && data.name.size() <= 100 &&
+      data.description is string && data.description.size() >= 1 && data.description.size() <= 500 &&
+      data.targetSector is string && data.targetSector.size() >= 2 && data.targetSector.size() <= 64 &&
+      data.rawMaterialDeltaPct is number && data.rawMaterialDeltaPct >= -50 && data.rawMaterialDeltaPct <= 100 &&
+      data.energyDeltaPct is number && data.energyDeltaPct >= -50 && data.energyDeltaPct <= 100 &&
+      data.volumeDeltaPct is number && data.volumeDeltaPct >= -50 && data.volumeDeltaPct <= 100 &&
+      data.labourDeltaPct is number && data.labourDeltaPct >= -50 && data.labourDeltaPct <= 100 &&
+      data.utilisationTargetPct is number && data.utilisationTargetPct >= 30 && data.utilisationTargetPct <= 98 &&
+      data.sellingPriceDeltaPct is number && data.sellingPriceDeltaPct >= -50 && data.sellingPriceDeltaPct <= 100 &&
+      data.projectedGrossMarginPct is number && data.projectedGrossMarginPct >= -500 && data.projectedGrossMarginPct <= 100 &&
+      data.projectedAnnualSavingsUsd is number &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // Validation Helper: OptimisationActionStatus
+    function isValidOptimisationStatus(data) {
+      return data.keys().hasAll([
+        'ownerId', 'recommendationCode', 'status', 'ownerNote',
+        'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'ownerId', 'recommendationCode', 'status', 'ownerNote',
+        'createdAt', 'updatedAt'
+      ]) &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid &&
+      data.recommendationCode is string && data.recommendationCode.size() >= 3 && data.recommendationCode.size() <= 64 && data.recommendationCode.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.status is string && data.status.size() >= 4 && data.status.size() <= 20 &&
+      data.status in ['Proposed', 'Approved', 'In Progress', 'Implemented'] &&
+      data.ownerNote is string && data.ownerNote.size() <= 400 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // Collection 1: /production_records/{recordId}
+    match /production_records/{recordId} {
+      allow get: if isSignedIn() && isValidId(recordId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(recordId) && isValidProductionRecord(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() && isValidId(recordId) && isValidProductionRecord(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'unitsProduced', 'sellingPricePerUnit', 'revenue', 'budgetedCost',
+          'rawMaterialCost', 'directLabourCost', 'energyCost',
+          'maintenanceCost', 'logisticsCost', 'inventoryHoldingCost',
+          'overheadCost', 'machineHoursAvailable', 'machineHoursUsed',
+          'rawMaterialInputTons', 'rawMaterialNetTons',
+          'energyKwhConsumed', 'benchmarkEnergyKwhPerUnit', 'updatedAt'
+        ]);
+      allow delete: if isVerifiedUser() && isValidId(recordId) && existing().ownerId == request.auth.uid;
+    }
+
+    // Collection 2: /saved_scenarios/{scenarioId}
+    match /saved_scenarios/{scenarioId} {
+      allow get: if isSignedIn() && isValidId(scenarioId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(scenarioId) && isValidSavedScenario(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() && isValidId(scenarioId) && isValidSavedScenario(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'description', 'targetSector',
+          'rawMaterialDeltaPct', 'energyDeltaPct', 'volumeDeltaPct',
+          'labourDeltaPct', 'utilisationTargetPct', 'sellingPriceDeltaPct',
+          'projectedGrossMarginPct', 'projectedAnnualSavingsUsd', 'updatedAt'
+        ]);
+      allow delete: if isVerifiedUser() && isValidId(scenarioId) && existing().ownerId == request.auth.uid;
+    }
+
+    // Collection 3: /optimisation_statuses/{statusId}
+    match /optimisation_statuses/{statusId} {
+      allow get: if isSignedIn() && isValidId(statusId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(statusId) && isValidOptimisationStatus(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() && isValidId(statusId) && isValidOptimisationStatus(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().recommendationCode == existing().recommendationCode &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        existing().status != 'Implemented' &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'ownerNote', 'updatedAt']);
+      allow delete: if isVerifiedUser() && isValidId(statusId) && existing().ownerId == request.auth.uid;
+    }
+  }
+}

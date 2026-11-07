@@ -1,0 +1,323 @@
+{
+  "entities": {
+    "ProductionRecord": {
+      "title": "ProductionRecord",
+      "description": "Monthly industrial manufacturing production, cost breakdown, and operational telemetry record for a specific plant and product line.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the record owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "month": {
+          "type": "string",
+          "description": "Reporting period in YYYY-MM format.",
+          "minLength": 7,
+          "maxLength": 7,
+          "pattern": "^202[0-9]-(0[1-9]|1[0-2])$"
+        },
+        "plantId": {
+          "type": "string",
+          "description": "Unique identifier for the manufacturing plant.",
+          "minLength": 3,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "plantName": {
+          "type": "string",
+          "description": "Human-readable name of the manufacturing facility.",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "description": "Industrial sector classification.",
+          "enum": ["Cement Systems", "Sugar Processing", "Mining & Material Handling", "Thermal Energy"]
+        },
+        "productId": {
+          "type": "string",
+          "description": "Unique product line identifier.",
+          "minLength": 3,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "productName": {
+          "type": "string",
+          "description": "Name of the industrial equipment or product line.",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "productionLine": {
+          "type": "string",
+          "description": "Production bay or assembly line code.",
+          "minLength": 2,
+          "maxLength": 64
+        },
+        "unitsProduced": {
+          "type": "number",
+          "description": "Equivalent industrial units fabricated/processed in the month."
+        },
+        "sellingPricePerUnit": {
+          "type": "number",
+          "description": "Realized selling price per unit in USD."
+        },
+        "revenue": {
+          "type": "number",
+          "description": "Total realized revenue for the product in the month in USD."
+        },
+        "budgetedCost": {
+          "type": "number",
+          "description": "Standard budgeted total production cost for the month in USD."
+        },
+        "rawMaterialCost": {
+          "type": "number",
+          "description": "Direct raw material cost (steel plates, castings, tubes, alloys) in USD."
+        },
+        "directLabourCost": {
+          "type": "number",
+          "description": "Direct fabrication, machining, and welding labour cost in USD."
+        },
+        "energyCost": {
+          "type": "number",
+          "description": "Electricity, thermal furnace, and compressed air utility cost in USD."
+        },
+        "maintenanceCost": {
+          "type": "number",
+          "description": "Preventive and breakdown machine maintenance expenditure in USD."
+        },
+        "logisticsCost": {
+          "type": "number",
+          "description": "Inbound freight and heavy-haulage outbound logistics cost in USD."
+        },
+        "inventoryHoldingCost": {
+          "type": "number",
+          "description": "Working capital holding, storage, and insurance cost for WIP and raw stock in USD."
+        },
+        "overheadCost": {
+          "type": "number",
+          "description": "Allocated plant overheads, NDT quality assurance, EHS, and depreciation in USD."
+        },
+        "machineHoursAvailable": {
+          "type": "number",
+          "description": "Total scheduled machine capacity hours for the line."
+        },
+        "machineHoursUsed": {
+          "type": "number",
+          "description": "Actual productive machine hours utilized."
+        },
+        "rawMaterialInputTons": {
+          "type": "number",
+          "description": "Gross metallic/raw material tonnage issued to shop floor."
+        },
+        "rawMaterialNetTons": {
+          "type": "number",
+          "description": "Net finished equipment weight in tons after cutting and machining."
+        },
+        "energyKwhConsumed": {
+          "type": "number",
+          "description": "Total electrical and thermal equivalent energy consumed in kWh."
+        },
+        "benchmarkEnergyKwhPerUnit": {
+          "type": "number",
+          "description": "Engineering standard energy consumption per unit in kWh."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when record was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when record was last updated."
+        }
+      },
+      "required": [
+        "ownerId",
+        "month",
+        "plantId",
+        "plantName",
+        "sector",
+        "productId",
+        "productName",
+        "productionLine",
+        "unitsProduced",
+        "sellingPricePerUnit",
+        "revenue",
+        "budgetedCost",
+        "rawMaterialCost",
+        "directLabourCost",
+        "energyCost",
+        "maintenanceCost",
+        "logisticsCost",
+        "inventoryHoldingCost",
+        "overheadCost",
+        "machineHoursAvailable",
+        "machineHoursUsed",
+        "rawMaterialInputTons",
+        "rawMaterialNetTons",
+        "energyKwhConsumed",
+        "benchmarkEnergyKwhPerUnit",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SavedScenario": {
+      "title": "SavedScenario",
+      "description": "User-configured what-if cost and profitability simulation scenario.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the creator.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Scenario title.",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "description": "Notes on scenario assumptions.",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "targetSector": {
+          "type": "string",
+          "description": "Sector filter applied to scenario ('ALL' or specific sector).",
+          "minLength": 2,
+          "maxLength": 64
+        },
+        "rawMaterialDeltaPct": {
+          "type": "number",
+          "description": "Percentage change in raw material prices (-50 to +100)."
+        },
+        "energyDeltaPct": {
+          "type": "number",
+          "description": "Percentage change in energy tariffs (-50 to +100)."
+        },
+        "volumeDeltaPct": {
+          "type": "number",
+          "description": "Percentage change in production volume (-50 to +100)."
+        },
+        "labourDeltaPct": {
+          "type": "number",
+          "description": "Percentage change in direct labour cost (-50 to +100)."
+        },
+        "utilisationTargetPct": {
+          "type": "number",
+          "description": "Target machine utilisation percentage (30 to 98)."
+        },
+        "sellingPriceDeltaPct": {
+          "type": "number",
+          "description": "Percentage change in unit selling prices (-50 to +100)."
+        },
+        "projectedGrossMarginPct": {
+          "type": "number",
+          "description": "Resulting simulated gross margin percentage."
+        },
+        "projectedAnnualSavingsUsd": {
+          "type": "number",
+          "description": "Net annual profit delta in USD relative to baseline."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update."
+        }
+      },
+      "required": [
+        "ownerId",
+        "name",
+        "description",
+        "targetSector",
+        "rawMaterialDeltaPct",
+        "energyDeltaPct",
+        "volumeDeltaPct",
+        "labourDeltaPct",
+        "utilisationTargetPct",
+        "sellingPriceDeltaPct",
+        "projectedGrossMarginPct",
+        "projectedAnnualSavingsUsd",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "OptimisationActionStatus": {
+      "title": "OptimisationActionStatus",
+      "description": "Tracks user execution status and notes for a cost-reduction recommendation.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the user managing the initiative.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "recommendationCode": {
+          "type": "string",
+          "description": "Deterministic identifier of the recommendation.",
+          "minLength": 3,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "status": {
+          "type": "string",
+          "description": "Implementation workflow stage.",
+          "enum": ["Proposed", "Approved", "In Progress", "Implemented"]
+        },
+        "ownerNote": {
+          "type": "string",
+          "description": "Engineering or finance implementation commentary.",
+          "minLength": 0,
+          "maxLength": 400
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when status record was initialized."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when status record was updated."
+        }
+      },
+      "required": [
+        "ownerId",
+        "recommendationCode",
+        "status",
+        "ownerNote",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/production_records/{recordId}": {
+      "schema": { "$ref": "#/entities/ProductionRecord" },
+      "description": "Stores monthly manufacturing cost and production telemetry records isolated by ownerId."
+    },
+    "/saved_scenarios/{scenarioId}": {
+      "schema": { "$ref": "#/entities/SavedScenario" },
+      "description": "Stores user-saved cost and profitability simulation scenarios isolated by ownerId."
+    },
+    "/optimisation_statuses/{statusId}": {
+      "schema": { "$ref": "#/entities/OptimisationActionStatus" },
+      "description": "Stores workflow approval and implementation statuses for cost-optimisation recommendations isolated by ownerId."
+    }
+  }
+}

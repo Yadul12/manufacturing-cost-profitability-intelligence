@@ -1,0 +1,6 @@
+{
+  "name": "Manufacturing Cost Optimisation & Profitability Intelligence Platform",
+  "description": "Industrial decision-support platform for manufacturing cost variance analysis, product-wise profitability intelligence, operations research cost-reduction engines, and multi-variable scenario simulation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
